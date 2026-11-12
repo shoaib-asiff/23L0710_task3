@@ -1,0 +1,51 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    labels:
+      org.opencontainers.image.title: "MongoDB"
+      org.opencontainers.image.description: "Primary database with persistent storage for Currency ETL"
+      org.opencontainers.image.vendor: "MLOps Task 3"
+      network.type: "bridge-airflow"
+      storage.type: "persistent-volume"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: currency_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - airflow
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: always
+    labels:
+      org.opencontainers.image.title: "Mongo Express"
+      org.opencontainers.image.description: "Web-based administration UI for MongoDB"
+      org.opencontainers.image.vendor: "MLOps Task 3"
+      network.type: "bridge-airflow"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+      ME_CONFIG_MONGODB_URL: mongodb://root:rootpassword@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - airflow
+
+volumes:
+  mongo_data:
+    name: task-3_mongo_data
+
+networks:
+  airflow:
+    external: true
